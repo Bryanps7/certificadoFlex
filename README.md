@@ -1,4 +1,4 @@
-# certificadoFlex
+# CertificadoFlex
 
 Aplicação web para gerar certificados personalizados a partir de imagens de fundo, com upload de arquivos, visualização de imagens e exportação em PDF.
 
