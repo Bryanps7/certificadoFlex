@@ -1,13 +1,3 @@
-// JavaScript para alternar tema
-const toggleButton = document.getElementById('theme-toggle');
-const body = document.body;
-toggleButton.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-    const icon = toggleButton.querySelector('i');
-    icon.classList.toggle('fa-moon');
-    icon.classList.toggle('fa-sun');
-});
-
 // Painel agora será usando localStorage
 document.getElementById('formCadastrar').addEventListener('submit', function (event) {
     event.preventDefault();

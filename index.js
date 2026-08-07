@@ -11,6 +11,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json())
 app.use(cors())
 
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Endpoint para listar imagens
 app.get('/api/uploads', (req, res) => {
   const uploadsDir = path.join(__dirname, 'public/assets/uploads');
@@ -20,9 +24,10 @@ app.get('/api/uploads', (req, res) => {
       return res.status(500).json({ error: 'Erro ao ler diretório' });
     }
 
-    // Filtrar apenas arquivos de imagem
+    // Filtrar apenas arquivos de imagem, incluindo formatos modernos
+    const imageExtensions = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg']);
     const imageFiles = files.filter(file =>
-      /\.(jpg|jpeg|png|gif|webp)$/i.test(file)
+      imageExtensions.has(path.extname(file).toLowerCase())
     );
 
     res.json(imageFiles);

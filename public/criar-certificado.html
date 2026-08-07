@@ -1,110 +1,197 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-  <meta charset="UTF-8">
-  <title>Carrossel de Imagens</title>
-  <link rel="stylesheet" href="/assets/css/upload.css">
-  <script src="assets/js/pdf.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"
-    integrity="sha512-MpDFIChbcXl2QgipQrt1VcPHMldRILetapBl5MPCA9Y8r7qvlwx1/Mc9hNTzY+kS5kX6PdoDq41ws1HiVNLdZA=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Criar Certificado</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/style.css" />
+  <link rel="stylesheet" href="./assets/css/upload.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.0/pdf-lib.min.js"></script>
+  <script src="./assets/js/common.js" defer></script>
+  <script src="./assets/js/certificados.js" defer></script>
   <style>
     .carousel {
       display: flex;
       overflow-x: auto;
       gap: 10px;
-      padding: 20px;
+      padding: 20px 0;
+      margin-bottom: 1rem;
     }
 
     .carousel img {
-      height: 150px;
+      height: 140px;
       cursor: pointer;
       border: 3px solid transparent;
-      transition: border 0.3s;
+      border-radius: 8px;
+      transition: border 0.3s ease, transform 0.3s ease;
+    }
+
+    .carousel img:hover {
+      transform: translateY(-2px);
     }
 
     .carousel img.selected {
-      border: 3px solid red;
+      border-color: #007bff;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 1.5rem;
+    }
+
+    body.dark-mode .card {
+      background: #2c2c2c;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
   </style>
 </head>
-
 <body>
-  <button onclick="baixarMano()">aaaaaaaaaaaaaaaaaaaaaa</button>
-  <div id="campo"></div>
   <header>
-    <nav>
-      <ul>
-        <li><a href="#novo">Novo</a></li>
-        <li><a href="#existente">Existente</a></li>
-      </ul>
-    </nav>
+    <div class="container">
+      <h1>Gerador de Certificados</h1>
+      <button id="theme-toggle" aria-label="Alternar tema">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
   </header>
+  <nav>
+    <div class="container">
+      <ul>
+        <li><a href="./criar-certificado.html" class="active"><i class="fas fa-certificate"></i> Criar um Certificado</a></li>
+        <li><a href="./criar-certificados.html"><i class="fas fa-copy"></i> Criar Vários Certificados</a></li>
+        <li><a href="./upload-background.html"><i class="fas fa-upload"></i> Upload de Imagens</a></li>
+        <li><a href="./painel.html"><i class="fas fa-cog"></i> Gerenciar Certificados</a></li>
+      </ul>
+    </div>
+  </nav>
+  <main>
+    <div class="container">
+      <section class="card">
+        <h2>Escolha a imagem de fundo</h2>
+        <div class="carousel" id="carousel"></div>
+        <div id="img-escolhida" class="form-group"></div>
+      </section>
 
-  <div class="carousel" id="carousel"></div>
-  <div id="img-escolhida"></div>
+      <section class="card">
+        <h2>Novo certificado</h2>
+        <form id="formNovoCertificado">
+          <div class="form-group">
+            <label for="certificado-nome">Nome do certificado</label>
+            <input type="text" id="certificado-nome" placeholder="Digite o nome do certificado" required />
+          </div>
+          <div class="form-group">
+            <label for="beneficiado-nome">Nome do beneficiado</label>
+            <input type="text" id="beneficiado-nome" placeholder="Digite o nome do beneficiado" required />
+          </div>
+          <div class="form-group">
+            <label for="certificado-descricao">Descrição</label>
+            <input type="text" id="certificado-descricao" placeholder="Digite a descrição" required />
+          </div>
+          <div class="form-group">
+            <label for="certificado-data">Data</label>
+            <input type="date" id="certificado-data" required />
+          </div>
+          <div class="form-group">
+            <label for="certificado-carga">Carga horária</label>
+            <input type="text" id="certificado-carga" placeholder="Ex.: 20 horas" required />
+          </div>
+          <button type="submit">Gerar Certificado</button>
+        </form>
+      </section>
 
+      <section class="card">
+        <h2>Carregar certificado existente</h2>
+        <form id="formCarregar">
+          <div class="form-group">
+            <label for="nome-beneficiado">Nome do beneficiado</label>
+            <input type="text" name="beneficiado" id="nome-beneficiado" placeholder="Nome do Beneficiado" required />
+          </div>
+          <div class="form-group">
+            <label for="nome-certificado">Nome do certificado</label>
+            <input type="text" name="nome" id="nome-certificado" placeholder="Nome do Certificado" required />
+          </div>
+          <button type="submit">Carregar</button>
+          <div id="certificado" class="form-group"></div>
+        </form>
+      </section>
+    </div>
+  </main>
 
-  <div id="novo">
-    <h1>Selecionar Imagem</h1>
+  <script>
+    const carousel = document.getElementById('carousel');
 
-    <input type="text" placeholder="Digite o nome do certificado" id="certificado-nome">
-    <input type="text" placeholder="Digite o nome do beneficiado" id="beneficiado-nome">
-    <input type="text" placeholder="Digite a descrição" id="certificado-descricao">
-    <input type="date" placeholder="Digite a data" id="certificado-data">
-    <button id="criar-certificado">Criar Certificado</button>
-  </div>
-
-  <div id="existente">
-    <h1>Carregar Certificado Existente</h1>
-    <form id="formCarregar">
-      <input type="text" name="name" id="nome-beneficiado" placeholder="Nome do Beneficiado" required>
-
-      <input type="text" name="nome" placeholder="Nome do Certificado" required>
-      <button type="submit">Carregar</button>
-      <div id="certificado"></div>
-      <button id="gerar-certificado">Gerar Certificado</button>
-    </form>
-
-    <script>
-      const carousel = document.getElementById('carousel');
-
-      fetch('/api/uploads')
-        .then(response => response.json())
-        .then(images => {
-          images.forEach(image => {
-            const img = document.createElement('img');
-            img.src = `/assets/uploads/${image}`;
-            img.alt = image;
-            img.addEventListener('click', () => {
-              document.querySelectorAll('.carousel img').forEach(i => i.classList.remove('selected'));
-              img.classList.add('selected');
-              document.getElementById('img-escolhida').innerHTML = img.src
-              console.log(img);
-
-            });
-            carousel.appendChild(img);
-          });
-        })
-        .catch(error => {
-          console.error('Erro ao carregar imagens:', error);
-        });
-
-      // Buscar o certificado existente do localStorage
-      document.getElementById('formCarregar').addEventListener('submit', function (event) {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        const nome = formData.get('nome');
-        const certificado = localStorage.key(nome);
-        if (certificado) {
-          console.log(certificado);
-          document.getElementById('certificado').innerHTML = certificado;
-        } else {
-          alert('Certificado não encontrado.');
+    fetch('/api/uploads')
+      .then((response) => response.json())
+      .then((images) => {
+        if (!images.length) {
+          carousel.innerHTML = '<p>Nenhuma imagem disponível. Faça upload primeiro.</p>';
+          return;
         }
-      });
-    </script>
-</body>
 
+        images.forEach((image) => {
+          const img = document.createElement('img');
+          img.src = `/assets/uploads/${image}`;
+          img.alt = image;
+          img.addEventListener('click', () => {
+            document.querySelectorAll('.carousel img').forEach((item) => item.classList.remove('selected'));
+            img.classList.add('selected');
+            document.getElementById('img-escolhida').textContent = `Imagem selecionada: ${image}`;
+            document.getElementById('img-escolhida').dataset.background = img.src;
+          });
+          carousel.appendChild(img);
+        });
+      })
+      .catch((error) => {
+        console.error('Erro ao carregar imagens:', error);
+      });
+
+    document.getElementById('formNovoCertificado').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const backgroundUrl = document.getElementById('img-escolhida').dataset.background;
+      if (!backgroundUrl) {
+        alert('Selecione uma imagem de fundo antes de gerar o PDF.');
+        return;
+      }
+
+      const nomeCertificado = document.getElementById('certificado-nome').value;
+      const nomeBeneficiado = document.getElementById('beneficiado-nome').value;
+      const descricao = document.getElementById('certificado-descricao').value;
+      const data = document.getElementById('certificado-data').value;
+      const cargaHoraria = document.getElementById('certificado-carga').value;
+
+      await gerarCertificadoComPdfLib({
+        nomeCertificado,
+        nomeBeneficiado,
+        descricao,
+        data,
+        cargaHoraria,
+        backgroundUrl
+      });
+    });
+
+    document.getElementById('formCarregar').addEventListener('submit', function (event) {
+      event.preventDefault();
+      const nome = document.getElementById('nome-certificado').value;
+      const certificado = localStorage.getItem(nome);
+      const beneficiado = document.getElementById('nome-beneficiado').value;
+
+      if (certificado) {
+        const dados = JSON.parse(certificado);
+        document.getElementById('certificado').innerHTML = `
+          <strong>Certificado carregado:</strong><br />
+          Beneficiário: ${beneficiado}<br />
+          Descrição: ${dados.descricao}<br />
+          Data: ${dados.data}
+        `;
+      } else {
+        alert('Certificado não encontrado.');
+      }
+    });
+  </script>
+</body>
 </html>
